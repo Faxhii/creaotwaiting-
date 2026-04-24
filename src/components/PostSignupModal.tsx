@@ -54,7 +54,7 @@ const PostSignupModal: React.FC<PostSignupModalProps> = ({ isOpen, onClose, data
 
   if (!data) return null;
 
-  const referralLink = `https://vero.app/join?ref=${data.referralCode}`;
+  const referralLink = `https://vero-smoky.vercel.app/?ref=${data.referralCode}`;
   
   const shareText = `I just got early access to Vero — the platform where brands pay creators for REAL results, not followers. Claim your founding member spot: ${referralLink}`;
 
