@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import ParticleBackground from './components/ParticleBackground';
 import HeroSection from './components/HeroSection';
@@ -10,10 +11,12 @@ import UrgencySection from './components/UrgencySection';
 import FAQSection from './components/FAQSection';
 import LiveToast from './components/LiveToast';
 import PostSignupModal from './components/PostSignupModal';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 import { useWaitlist } from './hooks/useWaitlist';
 import { Globe, Share2, MessageCircle } from 'lucide-react';
 
-function App() {
+const LandingPage = () => {
   const { loading, totalCount, joinWaitlist } = useWaitlist();
   const [signupData, setSignupData] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,8 +29,8 @@ function App() {
     restDelta: 0.001
   });
 
-  const handleSignup = async (data: { email: string; name: string; role: string }) => {
-    const result = await joinWaitlist(data);
+  const handleSignup = async (data: { email: string; name: string; country: string }) => {
+    const result = await joinWaitlist({ ...data, role: selectedRole || 'creator' });
     setSignupData(result);
     setIsModalOpen(true);
   };
@@ -92,16 +95,16 @@ function App() {
               Real creators. Real results. The future of influencer marketing is ROI-driven.
             </p>
             <div className="flex gap-6">
-              <Globe className="text-muted hover:text-white cursor-pointer transition-colors" />
-              <Share2 className="text-muted hover:text-white cursor-pointer transition-colors" />
-              <MessageCircle className="text-muted hover:text-white cursor-pointer transition-colors" />
+              <div className="InstagramIcon"><Globe className="text-muted hover:text-white cursor-pointer transition-colors" /></div>
+              <div className="TwitterIcon"><Share2 className="text-muted hover:text-white cursor-pointer transition-colors" /></div>
+              <div className="LinkedinIcon"><MessageCircle className="text-muted hover:text-white cursor-pointer transition-colors" /></div>
             </div>
           </div>
           
           <div className="flex flex-col md:items-end gap-4 text-sm text-muted font-medium">
             <div className="flex gap-8">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
             <p>© 2025 Vero. All rights reserved.</p>
           </div>
@@ -114,6 +117,18 @@ function App() {
         data={signupData} 
       />
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+      </Routes>
+    </Router>
   );
 }
 

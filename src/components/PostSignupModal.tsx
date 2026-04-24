@@ -105,6 +105,21 @@ const PostSignupModal: React.FC<PostSignupModalProps> = ({ isOpen, onClose, data
                   #{displayPosition.toLocaleString()}
                 </div>
                 
+                {/* Public Shoutout Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2 }}
+                  className="flex flex-col items-center gap-2 mb-8"
+                >
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-widest border border-green-500/20">
+                    🎉 You just appeared on the waitlist page
+                  </div>
+                  <p className="text-muted text-[13px] font-medium">
+                    Everyone visiting Vero right now can see that you joined. <br /> Welcome to the founding members.
+                  </p>
+                </motion.div>
+
                 <div className="max-w-xs mx-auto">
                   <div className="flex justify-between text-xs font-bold mb-2">
                     <span className="text-muted uppercase tracking-widest">Progress</span>

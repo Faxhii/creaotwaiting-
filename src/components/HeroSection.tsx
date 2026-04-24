@@ -4,7 +4,7 @@ import RoleSelector from './RoleSelector';
 import EmailForm from './EmailForm';
 
 interface HeroSectionProps {
-  onSignup: (data: { email: string; name: string; role: string }) => Promise<void>;
+  onSignup: (data: { email: string; name: string; country: string }) => Promise<void>;
   loading: boolean;
   selectedRole: 'brand' | 'creator' | null;
   onRoleSelect: (role: 'brand' | 'creator') => void;

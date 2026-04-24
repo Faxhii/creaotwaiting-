@@ -1,23 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TOAST_NAMES } from '../constants/data';
 import { cn } from '../lib/utils';
+import { useWaitlist, type WaitlistEntry } from '../hooks/useWaitlist';
+
+const MOCK_SIGNUPS: WaitlistEntry[] = [
+  { name: "Priya", country: "India", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Ahmed", country: "UAE", role: "Brand", created_at: new Date().toISOString() },
+  { name: "Sarah", country: "United Kingdom", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Rahul", country: "India", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Ming", country: "Singapore", role: "Brand", created_at: new Date().toISOString() },
+];
 
 const SocialProof: React.FC = () => {
-  const [recentJoins, setRecentJoins] = useState(TOAST_NAMES.slice(0, 5).map((j, i) => ({ ...j, id: i })));
+  const { realSignups } = useWaitlist();
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // Use real signups if available, otherwise fallback to mock data
+  const displaySignups = realSignups.length > 0 ? realSignups : MOCK_SIGNUPS;
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRecentJoins((prev) => {
-        const next = [...prev];
-        next.pop();
-        const randomUser = TOAST_NAMES[Math.floor(Math.random() * TOAST_NAMES.length)];
-        next.unshift({ ...randomUser, id: Date.now() });
-        return next;
-      });
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
+    if (realSignups.length > 0) {
+      const newest = realSignups[0];
+      const newestId = `${newest.email}-${newest.created_at}`;
+      
+      // Highlight if it's brand new (less than 5s old)
+      const createdDate = new Date(newest.created_at || '');
+      const now = new Date();
+      if (now.getTime() - createdDate.getTime() < 5000) {
+        setHighlightedId(newestId);
+        const timer = setTimeout(() => setHighlightedId(null), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [realSignups]);
 
   const avatars = ["PK", "RS", "AM", "SL", "RK"];
 
@@ -31,7 +46,7 @@ const SocialProof: React.FC = () => {
               <div 
                 key={i} 
                 className={cn(
-                  "w-12 h-12 rounded-full border-4 border-background flex items-center justify-center text-xs font-bold text-white",
+                  "w-12 h-12 rounded-full border-4 border-background flex items-center justify-center text-xs font-bold text-white shadow-xl",
                   i % 2 === 0 ? "bg-primary" : "bg-accent"
                 )}
               >
@@ -65,27 +80,46 @@ const SocialProof: React.FC = () => {
       </div>
 
       {/* Live Join Feed */}
-      <div className="max-w-md mx-auto relative h-48 overflow-hidden pt-10">
+      <div className="max-w-md mx-auto relative h-64 overflow-hidden pt-10">
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background to-transparent z-10" />
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent z-10" />
         
-        <div className="space-y-4">
+        <div className="space-y-4 px-2">
           <AnimatePresence initial={false} mode="popLayout">
-            {recentJoins.map((join: any) => (
-              <motion.div
-                key={join.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="flex items-center gap-3 justify-center text-sm text-muted"
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                <span>
-                  <span className="text-white font-semibold">{join.name}</span> from {join.location} just joined as {join.role} ✓
-                </span>
-              </motion.div>
-            ))}
+            {displaySignups.map((join) => {
+              const id = join.email ? `${join.email}-${join.created_at}` : `${join.name}-${join.created_at}`;
+              const isHighlighted = id === highlightedId;
+              const firstName = join.name.split(' ')[0];
+
+              return (
+                <motion.div
+                  key={id}
+                  layout
+                  initial={{ opacity: 0, y: 20, x: -10 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0, 
+                    x: 0,
+                    borderColor: isHighlighted ? 'rgba(124, 111, 255, 0.5)' : 'transparent',
+                    borderLeftWidth: isHighlighted ? '4px' : '0px'
+                  }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className={cn(
+                    "flex items-center gap-3 justify-center text-sm text-muted p-2 rounded-lg transition-all border-l-0",
+                    isHighlighted && "bg-primary/5"
+                  )}
+                >
+                  <div className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    isHighlighted ? "bg-primary animate-pulse" : "bg-green-500"
+                  )} />
+                  <span>
+                    <span className="text-white font-semibold">{firstName}</span> from {join.country} joined as <span className="capitalize">{join.role}</span> ✓
+                  </span>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       </div>

@@ -2,21 +2,41 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export interface WaitlistEntry {
-  email: string;
+  email?: string;
   name: string;
   role: string;
+  country: string;
   referral_code?: string;
   referred_by?: string;
+  created_at?: string;
 }
 
 export const useWaitlist = () => {
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(2847);
+  const [realSignups, setRealSignups] = useState<WaitlistEntry[]>([]);
 
   useEffect(() => {
     fetchCount();
-    const interval = setInterval(fetchCount, 60000);
-    return () => clearInterval(interval);
+    fetchRecentSignups();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('public:waitlist')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'waitlist' },
+        (payload) => {
+          const newEntry = payload.new as WaitlistEntry;
+          setRealSignups(prev => [newEntry, ...prev.slice(0, 19)]);
+          setTotalCount(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchCount = async () => {
@@ -30,7 +50,22 @@ export const useWaitlist = () => {
         setTotalCount(2847 + count);
       }
     } catch (e) {
-      console.warn('Supabase count failed, using fallback', e);
+      console.warn('Supabase count failed', e);
+    }
+  };
+
+  const fetchRecentSignups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('waitlist')
+        .select('name, country, role, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      if (data) setRealSignups(data as WaitlistEntry[]);
+    } catch (e) {
+      console.warn('Failed to fetch recent signups', e);
     }
   };
 
@@ -38,7 +73,7 @@ export const useWaitlist = () => {
     return Math.random().toString(36).substring(2, 10).toUpperCase();
   };
 
-  const joinWaitlist = async (entry: WaitlistEntry) => {
+  const joinWaitlist = async (entry: { email: string; name: string; country: string; role: string }) => {
     setLoading(true);
     try {
       const referralCode = generateReferralCode();
@@ -59,7 +94,7 @@ export const useWaitlist = () => {
 
       if (error) throw error;
 
-      // Calculate position (all rows created before this one)
+      // Calculate position
       const { count } = await supabase
         .from('waitlist')
         .select('*', { count: 'exact', head: true })
@@ -73,20 +108,15 @@ export const useWaitlist = () => {
       };
     } catch (e) {
       console.error('Supabase join failed', e);
-      // Fallback for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
       setLoading(false);
-      return {
-        ...entry,
-        position: totalCount + 1,
-        referralCode: generateReferralCode(),
-      };
+      throw e;
     }
   };
 
   return {
     loading,
     totalCount,
+    realSignups,
     joinWaitlist,
   };
 };
