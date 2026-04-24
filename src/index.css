@@ -72,7 +72,27 @@ body {
   animation: shimmer 3s infinite;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@layer utilities {
+  .animate-wavy {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 2s ease-in-out forwards;
+  }
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.text-gradient-purple-coral {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-white to-accent;
+}
+
+.gold-pill {
+  @apply px-4 py-1.5 rounded-full border border-yellow-500/30 bg-yellow-500/5 text-yellow-500 text-xs font-bold uppercase tracking-widest;
 }

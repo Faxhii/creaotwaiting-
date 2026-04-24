@@ -1,26 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus, Unlock, Handshake } from 'lucide-react';
+import { ClipboardCheck, Key, Handshake } from 'lucide-react';
 
 const HowItWorks: React.FC = () => {
   const steps = [
     {
       title: "Join the waitlist",
-      description: "Pick your role and claim your founding member spot.",
-      icon: <UserPlus className="w-8 h-8" />,
+      description: "Pick your role and claim your founding member spot in 30 seconds.",
+      icon: <ClipboardCheck className="w-8 h-8" />,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
       title: "Get early access",
-      description: "Receive priority access as we roll out the platform.",
-      icon: <Unlock className="w-8 h-8" />,
+      description: "We onboard in order of signup. You'll get an email when your access is ready.",
+      icon: <Key className="w-8 h-8" />,
       color: "text-accent",
       bg: "bg-accent/10",
     },
     {
-      title: "Start closing deals",
-      description: "Brands pay for real results, creators get paid for impact.",
+      title: "Close real deals",
+      description: "Brands find you by results. Creators get paid for performance. Everyone wins.",
       icon: <Handshake className="w-8 h-8" />,
       color: "text-green-500",
       bg: "bg-green-500/10",

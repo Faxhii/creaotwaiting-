@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Copy, Check, MessageCircle, Share2, Globe } from 'lucide-react';
-
+import { Copy, Check, MessageCircle, Share2, X } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface PostSignupModalProps {
   isOpen: boolean;
@@ -18,37 +18,45 @@ interface PostSignupModalProps {
 
 const PostSignupModal: React.FC<PostSignupModalProps> = ({ isOpen, onClose, data }) => {
   const [copied, setCopied] = useState(false);
-  const [displayPosition, setDisplayPosition] = useState(0);
+  const [displayPosition, setDisplayPosition] = useState(3000);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && data) {
       confetti({
         particleCount: 150,
-        spread: 70,
+        spread: 80,
         origin: { y: 0.6 },
-        colors: ['#7C6FFF', '#E94560', '#ffffff']
+        colors: ['#7C6FFF', '#E94560', '#10B981', '#F8FAFC']
       });
 
-      if (data?.position) {
-        let start = 0;
-        const end = data.position;
-        const duration = 2000;
-        const increment = Math.ceil(end / (duration / 16));
-        
-        const timer = setInterval(() => {
-          start += increment;
-          if (start >= end) {
-            setDisplayPosition(end);
-            clearInterval(timer);
-          } else {
-            setDisplayPosition(start);
-          }
-        }, 16);
-      }
+      // Position countdown animation
+      const startPos = 3000;
+      const endPos = data.position;
+      const duration = 2000;
+      const stepTime = 16;
+      const steps = duration / stepTime;
+      const decrement = (startPos - endPos) / steps;
+      
+      let currentPos = startPos;
+      const timer = setInterval(() => {
+        currentPos -= decrement;
+        if (currentPos <= endPos) {
+          setDisplayPosition(endPos);
+          clearInterval(timer);
+        } else {
+          setDisplayPosition(Math.floor(currentPos));
+        }
+      }, stepTime);
+
+      return () => clearInterval(timer);
     }
   }, [isOpen, data]);
 
-  const referralLink = `https://vero.app/join?ref=${data?.referralCode || 'FOUNDER'}`;
+  if (!data) return null;
+
+  const referralLink = `https://vero.app/join?ref=${data.referralCode}`;
+  
+  const shareText = `I just got early access to Vero — the platform where brands pay creators for REAL results, not followers. Claim your founding member spot: ${referralLink}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -57,111 +65,121 @@ const PostSignupModal: React.FC<PostSignupModalProps> = ({ isOpen, onClose, data
   };
 
   const shareOnWhatsApp = () => {
-    const text = `I just joined the Vero waitlist — the platform where brands pay creators for REAL results, not followers. Join here: ${referralLink}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
-  if (!data) return null;
+  const shareOnTwitter = () => {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
-          />
-          
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 overflow-y-auto bg-background/90 backdrop-blur-xl">
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-2xl bg-card border-t sm:border border-border rounded-t-[3rem] sm:rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-hidden"
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative w-full max-w-2xl bg-card border-t md:border border-border rounded-t-[3rem] md:rounded-[3rem] min-h-screen md:min-h-0 p-8 md:p-12 shadow-2xl"
           >
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] -z-10" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/10 blur-[100px] -z-10" />
+            <button onClick={onClose} className="absolute top-6 right-6 p-2 text-muted hover:text-white transition-colors">
+              <X size={24} />
+            </button>
 
             <div className="text-center">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="inline-block px-6 py-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-500 text-sm font-bold mb-6"
+                transition={{ delay: 0.3 }}
+                className="gold-pill mb-6 inline-block"
               >
-                🏆 {data.role === 'brand' ? 'Founding Brand Member' : 'Founding Creator Member'}
+                {data.role === 'brand' ? 'Founding Brand Member 💼' : 'Founding Creator Member ⭐'}
               </motion.div>
 
-              <h2 className="text-3xl md:text-5xl font-black mb-2">Welcome to Vero, {data.name.split(' ')[0]}!</h2>
-              <p className="text-muted text-lg mb-10">We've saved your spot in the global marketplace.</p>
+              <h2 className="text-3xl md:text-5xl font-black mb-10 leading-tight">Welcome to Vero, <br /> {data.name.split(' ')[0]}!</h2>
 
               <div className="mb-12">
-                <p className="text-muted uppercase tracking-widest text-xs font-bold mb-2">Your Waitlist Position</p>
-                <div className="text-7xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-accent mb-4">
+                <p className="text-[10px] uppercase font-black tracking-[0.3em] text-muted mb-4">Your Waitlist Position</p>
+                <div className="text-7xl md:text-9xl font-black text-gradient-purple-coral mb-6">
                   #{displayPosition.toLocaleString()}
                 </div>
+                
                 <div className="max-w-xs mx-auto">
-                  <div className="flex justify-between text-xs text-muted mb-2 font-bold">
-                    <span>PROGRESS</span>
-                    <span>AHEAD OF 84%</span>
+                  <div className="flex justify-between text-xs font-bold mb-2">
+                    <span className="text-muted uppercase tracking-widest">Progress</span>
+                    <span className="text-primary uppercase tracking-widest">Ahead of 84%</span>
                   </div>
-                  <div className="h-2 w-full bg-background rounded-full overflow-hidden border border-border">
+                  <div className="h-2 w-full bg-background rounded-full overflow-hidden border border-white/5">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: '84%' }}
-                      transition={{ duration: 1.5, delay: 0.5 }}
+                      transition={{ duration: 1.5, delay: 0.8 }}
                       className="h-full bg-primary"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="glass-panel p-8 rounded-[2rem] border-primary/20">
-                <h3 className="text-xl font-bold mb-4">Move up the list!</h3>
-                <p className="text-muted mb-6 text-sm">
-                  Share Vero with your network. For every friend who joins, 
-                  you'll move up <span className="text-white font-bold">50 spots</span>.
+              <div className="glass-panel p-8 rounded-[2.5rem] border-primary/20 mb-12">
+                <h3 className="text-xl font-bold mb-4">Move up <span className="text-primary">50 spots</span> by sharing</h3>
+                <p className="text-muted text-sm mb-8 leading-relaxed">
+                  Refer your network. Every person who joins with your link moves you up the list.
                 </p>
 
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <div className="relative flex-1 w-full">
+                <div className="space-y-4">
+                  <div className="relative group">
                     <input
                       readOnly
                       value={referralLink}
-                      className="w-full bg-background border border-border rounded-2xl p-4 pr-12 text-sm text-muted outline-none"
+                      className="w-full bg-background border border-border rounded-2xl p-4 pr-12 text-sm text-muted outline-none focus:border-primary transition-all"
                     />
-                    <button
-                      onClick={copyToClipboard}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-white transition-colors"
-                    >
+                    <button onClick={copyToClipboard} className="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-white transition-colors">
                       {copied ? <Check size={20} /> : <Copy size={20} />}
                     </button>
+                    {copied && (
+                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] px-2 py-1 rounded-md font-bold">COPIED!</div>
+                    )}
                   </div>
                   
-                  <div className="flex gap-2 w-full md:w-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                       onClick={shareOnWhatsApp}
-                      className="flex-1 md:flex-none p-4 bg-[#25D366] text-white rounded-2xl hover:scale-105 transition-transform flex items-center justify-center"
+                      className="h-14 bg-[#25D366] text-white rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 font-bold"
                     >
-                      <MessageCircle size={24} />
+                      <MessageCircle size={20} /> Share on WhatsApp
                     </button>
-                    <button className="flex-1 md:flex-none p-4 bg-[#1DA1F2] text-white rounded-2xl hover:scale-105 transition-transform flex items-center justify-center">
-                      <Share2 size={24} />
-                    </button>
-                    <button className="flex-1 md:flex-none p-4 bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white rounded-2xl hover:scale-105 transition-transform flex items-center justify-center">
-                      <Globe size={24} />
+                    <button
+                      onClick={shareOnTwitter}
+                      className="h-14 bg-white text-black rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 font-bold"
+                    >
+                      <Share2 size={20} /> Share on X
                     </button>
                   </div>
                 </div>
               </div>
 
-              <p className="mt-8 text-xs text-muted">
-                We'll email you at <span className="text-white">{data.email}</span> when your access is ready.
-              </p>
+              <div className="space-y-4 text-left max-w-sm mx-auto">
+                <h4 className="text-sm font-bold uppercase tracking-widest text-muted mb-4">What's next?</h4>
+                {[
+                  { text: `We'll email ${data.email} when your access is ready`, done: true },
+                  { text: "Follow us on Instagram for launch updates", done: false },
+                  { text: "Share your link to move up the waitlist", done: false },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1 + i * 0.2 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", item.done ? "bg-green-500/20 text-green-500" : "bg-white/5 text-muted")}>
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                    <span className={cn("text-xs", item.done ? "text-white font-medium" : "text-muted")}>{item.text}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>

@@ -3,6 +3,7 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import ParticleBackground from './components/ParticleBackground';
 import HeroSection from './components/HeroSection';
 import SocialProof from './components/SocialProof';
+import ProductPreview from './components/ProductPreview/ProductPreview';
 import BenefitsSection from './components/BenefitsSection';
 import HowItWorks from './components/HowItWorks';
 import UrgencySection from './components/UrgencySection';
@@ -36,9 +37,9 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-white selection:bg-primary/30 selection:text-primary">
+    <div className="min-h-screen bg-[#0A0A0F] text-white selection:bg-primary/30 selection:text-primary overflow-x-hidden">
       <ParticleBackground />
-      <LiveToast />
+      {!isModalOpen && <LiveToast />}
       
       {/* Progress Bar */}
       <motion.div
@@ -48,7 +49,7 @@ function App() {
 
       {/* Top Bar */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between glass-panel border-x-0 border-t-0">
-        <div className="flex items-center gap-2" onClick={scrollToHero} style={{ cursor: 'pointer' }}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={scrollToHero}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20">
             V
           </div>
@@ -56,9 +57,9 @@ function App() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-bold text-green-500">{totalCount.toLocaleString()} ON WAITLIST</span>
+            <span className="text-[10px] sm:text-xs font-black text-green-500 uppercase tracking-widest">{totalCount.toLocaleString()} ON WAITLIST</span>
           </div>
         </div>
       </nav>
@@ -71,22 +72,16 @@ function App() {
           onRoleSelect={setSelectedRole}
         />
         
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          viewport={{ once: true }}
-        >
-          <SocialProof />
-          <BenefitsSection role={selectedRole} />
-          <HowItWorks />
-          <UrgencySection onCTAClick={scrollToHero} />
-          <FAQSection />
-        </motion.div>
+        <SocialProof />
+        <ProductPreview />
+        <BenefitsSection role={selectedRole} />
+        <HowItWorks />
+        <UrgencySection onCTAClick={scrollToHero} />
+        <FAQSection />
       </main>
 
       {/* Footer */}
-      <footer className="py-20 px-6 border-t border-border mt-20 relative overflow-hidden">
+      <footer className="py-20 px-6 border-t border-white/5 mt-20 relative overflow-hidden bg-card/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -97,13 +92,13 @@ function App() {
               Real creators. Real results. The future of influencer marketing is ROI-driven.
             </p>
             <div className="flex gap-6">
-              <InstagramIcon className="text-muted hover:text-white cursor-pointer transition-colors" />
-              <TwitterIcon className="text-muted hover:text-white cursor-pointer transition-colors" />
-              <LinkedinIcon className="text-muted hover:text-white cursor-pointer transition-colors" />
+              <Globe className="text-muted hover:text-white cursor-pointer transition-colors" />
+              <Share2 className="text-muted hover:text-white cursor-pointer transition-colors" />
+              <MessageCircle className="text-muted hover:text-white cursor-pointer transition-colors" />
             </div>
           </div>
           
-          <div className="flex flex-col md:items-end gap-4 text-sm text-muted">
+          <div className="flex flex-col md:items-end gap-4 text-sm text-muted font-medium">
             <div className="flex gap-8">
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
@@ -121,10 +116,5 @@ function App() {
     </div>
   );
 }
-
-
-const InstagramIcon = (props: any) => <Globe {...props} />;
-const TwitterIcon = (props: any) => <Share2 {...props} />;
-const LinkedinIcon = (props: any) => <MessageCircle {...props} />;
 
 export default App;

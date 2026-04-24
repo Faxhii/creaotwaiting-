@@ -34,10 +34,14 @@ export const useWaitlist = () => {
     }
   };
 
+  const generateReferralCode = () => {
+    return Math.random().toString(36).substring(2, 10).toUpperCase();
+  };
+
   const joinWaitlist = async (entry: WaitlistEntry) => {
     setLoading(true);
     try {
-      const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const referralCode = generateReferralCode();
       const urlParams = new URLSearchParams(window.location.search);
       const referredBy = urlParams.get('ref');
 
@@ -55,7 +59,7 @@ export const useWaitlist = () => {
 
       if (error) throw error;
 
-      // Get position
+      // Calculate position (all rows created before this one)
       const { count } = await supabase
         .from('waitlist')
         .select('*', { count: 'exact', head: true })
@@ -68,14 +72,14 @@ export const useWaitlist = () => {
         referralCode: data.referral_code,
       };
     } catch (e) {
-      console.error('Supabase insert failed', e);
+      console.error('Supabase join failed', e);
       // Fallback for demo
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setLoading(false);
       return {
         ...entry,
         position: totalCount + 1,
-        referralCode: 'DEMO' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+        referralCode: generateReferralCode(),
       };
     }
   };
