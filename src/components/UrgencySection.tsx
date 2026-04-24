@@ -1,24 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { useWaitlist } from '../hooks/useWaitlist';
 
 interface UrgencySectionProps {
   onCTAClick: () => void;
 }
 
 const UrgencySection: React.FC<UrgencySectionProps> = ({ onCTAClick }) => {
-  const [count, setCount] = useState(2847);
+  const { totalCount } = useWaitlist();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount(prev => {
-        if (prev >= 2999) return prev;
-        return prev + 1;
-      });
-    }, Math.random() * 45000 + 45000); // 45-90 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const progress = (count / 3000) * 100;
+  const progress = (totalCount / 3000) * 100;
 
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto">
@@ -38,12 +29,12 @@ const UrgencySection: React.FC<UrgencySectionProps> = ({ onCTAClick }) => {
         <div className="flex flex-col items-center justify-center mb-10">
           <div className="flex items-baseline gap-2 mb-4">
             <motion.span
-              key={count}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              key={totalCount}
+              initial={{ scale: 1.2, color: '#E94560' }}
+              animate={{ scale: 1, color: '#fff' }}
               className="text-6xl md:text-8xl font-black text-white"
             >
-              {count}
+              {totalCount.toLocaleString()}
             </motion.span>
             <span className="text-2xl md:text-3xl text-muted font-bold">/ 3,000 founding slots</span>
           </div>
@@ -51,10 +42,9 @@ const UrgencySection: React.FC<UrgencySectionProps> = ({ onCTAClick }) => {
           <div className="w-full max-w-2xl h-4 bg-background rounded-full p-1 border border-white/5">
             <motion.div
               initial={{ width: 0 }}
-              whileInView={{ width: `${progress}%` }}
-              viewport={{ once: true }}
+              animate={{ width: `${progress}%` }}
               transition={{ duration: 2, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+              className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_15px_rgba(233,69,96,0.3)]"
             />
           </div>
         </div>
@@ -64,7 +54,7 @@ const UrgencySection: React.FC<UrgencySectionProps> = ({ onCTAClick }) => {
             onClick={onCTAClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full md:w-auto btn-primary text-xl px-16 h-16 rounded-2xl"
+            className="w-full md:w-auto bg-gradient-to-r from-accent to-[#C73652] text-white font-bold text-xl px-16 h-16 rounded-2xl shadow-lg hover:shadow-accent/20 transition-all"
           >
             Claim My Founding Spot →
           </motion.button>

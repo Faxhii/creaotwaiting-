@@ -9,10 +9,15 @@ const MOCK_SIGNUPS: WaitlistEntry[] = [
   { name: "Sarah", country: "United Kingdom", role: "Creator", created_at: new Date().toISOString() },
   { name: "Rahul", country: "India", role: "Creator", created_at: new Date().toISOString() },
   { name: "Ming", country: "Singapore", role: "Brand", created_at: new Date().toISOString() },
+  { name: "Emma", country: "Canada", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Hassan", country: "UAE", role: "Brand", created_at: new Date().toISOString() },
+  { name: "Ananya", country: "India", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Sofia", country: "Spain", role: "Creator", created_at: new Date().toISOString() },
+  { name: "Liam", country: "USA", role: "Brand", created_at: new Date().toISOString() },
 ];
 
 const SocialProof: React.FC = () => {
-  const { realSignups } = useWaitlist();
+  const { realSignups, totalCount } = useWaitlist();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   // Use real signups if available, otherwise fallback to mock data
@@ -55,7 +60,15 @@ const SocialProof: React.FC = () => {
             ))}
           </div>
           <div className="text-xl font-bold">
-            2,847+ <span className="text-muted font-medium ml-1">already waiting</span>
+            <motion.span
+              key={totalCount}
+              initial={{ scale: 1.2, color: '#7C6FFF' }}
+              animate={{ scale: 1, color: '#fff' }}
+              transition={{ duration: 0.5 }}
+            >
+              {totalCount.toLocaleString()}
+            </motion.span>
+            <span className="text-muted font-medium ml-2">already waiting</span>
           </div>
         </div>
 
@@ -95,24 +108,23 @@ const SocialProof: React.FC = () => {
                 <motion.div
                   key={id}
                   layout
-                  initial={{ opacity: 0, y: 20, x: -10 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ 
                     opacity: 1, 
                     y: 0, 
-                    x: 0,
                     borderColor: isHighlighted ? 'rgba(124, 111, 255, 0.5)' : 'transparent',
                     borderLeftWidth: isHighlighted ? '4px' : '0px'
                   }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
+                  exit={{ opacity: 0, y: -30 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
                   className={cn(
                     "flex items-center gap-3 justify-center text-sm text-muted p-2 rounded-lg transition-all border-l-0",
-                    isHighlighted && "bg-primary/5"
+                    isHighlighted && "bg-primary/5 shadow-[0_0_15px_rgba(124,111,255,0.1)]"
                   )}
                 >
                   <div className={cn(
                     "w-1.5 h-1.5 rounded-full",
-                    isHighlighted ? "bg-primary animate-pulse" : "bg-green-500"
+                    isHighlighted ? "bg-primary animate-pulse shadow-[0_0_8px_#7C6FFF]" : "bg-green-500"
                   )} />
                   <span>
                     <span className="text-white font-semibold">{firstName}</span> from {join.country} joined as <span className="capitalize">{join.role}</span> ✓

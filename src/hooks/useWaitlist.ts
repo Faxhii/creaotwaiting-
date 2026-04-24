@@ -13,8 +13,12 @@ export interface WaitlistEntry {
 
 export const useWaitlist = () => {
   const [loading, setLoading] = useState(false);
-  const [totalCount, setTotalCount] = useState(2847);
+  const [dbCount, setDbCount] = useState(0);
+  const [randomOffset, setRandomOffset] = useState(0);
   const [realSignups, setRealSignups] = useState<WaitlistEntry[]>([]);
+
+  // Base starting number from PRD
+  const BASE_COUNT = 2847;
 
   useEffect(() => {
     fetchCount();
@@ -29,13 +33,19 @@ export const useWaitlist = () => {
         (payload) => {
           const newEntry = payload.new as WaitlistEntry;
           setRealSignups(prev => [newEntry, ...prev.slice(0, 19)]);
-          setTotalCount(prev => prev + 1);
+          setDbCount(prev => prev + 1);
         }
       )
       .subscribe();
 
+    // Random organic growth simulation (1 new join every 45-90s)
+    const organicInterval = setInterval(() => {
+      setRandomOffset(prev => prev + 1);
+    }, Math.random() * 45000 + 45000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(organicInterval);
     };
   }, []);
 
@@ -47,7 +57,7 @@ export const useWaitlist = () => {
 
       if (error) throw error;
       if (count !== null) {
-        setTotalCount(2847 + count);
+        setDbCount(count);
       }
     } catch (e) {
       console.warn('Supabase count failed', e);
@@ -103,7 +113,7 @@ export const useWaitlist = () => {
       setLoading(false);
       return {
         ...data,
-        position: 2847 + (count || 0) + 1,
+        position: BASE_COUNT + randomOffset + (count || 0) + 1,
         referralCode: data.referral_code,
       };
     } catch (e) {
@@ -115,7 +125,7 @@ export const useWaitlist = () => {
 
   return {
     loading,
-    totalCount,
+    totalCount: BASE_COUNT + dbCount + randomOffset,
     realSignups,
     joinWaitlist,
   };
